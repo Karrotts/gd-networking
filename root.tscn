@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://7x4x6ccshv7v"]
+
+[ext_resource type="Script" uid="uid://cdbm00y2lbk1g" path="res://root.gd" id="1_pq8q7"]
+
+[node name="Root" type="Node2D" unique_id=1392959599]
+script = ExtResource("1_pq8q7")
+
+[node name="StartServerButton" type="Button" parent="." unique_id=1934667746]
+offset_right = 8.0
+offset_bottom = 8.0
+text = "Start Server"
+
+[node name="StartClientButton" type="Button" parent="." unique_id=845532788]
+offset_top = 40.0
+offset_right = 100.0
+offset_bottom = 71.0
+text = "Start Client"
+
+[node name="SendPacketButton" type="Button" parent="." unique_id=1214419314]
+offset_left = 1.0
+offset_top = 95.0
+offset_right = 101.0
+offset_bottom = 126.0
+text = "Send ID Packet"
