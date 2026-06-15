@@ -40,9 +40,14 @@ func start_client(address: String = "127.0.0.1", port: int = 7000) -> void:
 func handle_disconnect() -> void:
 	if server_peer != null:
 		server_peer.peer_disconnect()
+	server_peer = null
 	client_id = -1
 	client_peer_ids = []
 	connection = null
+	
+	
+func send_to_server(packet: PackedByteArray, flag: int = ENetPacketPeer.FLAG_RELIABLE, channel: int = 0) -> void:
+	server_peer.send(channel, packet, flag)
 
 
 ## Determines if the provided id is a client and is THIS client

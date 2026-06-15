@@ -9,6 +9,7 @@ signal on_peer_disconnected(id: int)
 ## Emitted when the server receives a packet. Contains the Id and the packet data.
 signal on_server_packet(id: int, data: PackedByteArray)
 
+## Emitted when the server receives an accepted packet
 signal on_server_packet_info(id: int, packet: PacketInfo)
 
 var connection: ENetConnection
@@ -28,6 +29,7 @@ func start_server(address: String = "127.0.0.1", port: int = 7000) -> void:
 		connection = null
 		return
 	print("Server started on [%s:%d]" % [address, port])
+
 	
 func broadcast(packet: PackedByteArray, flag: int = ENetPacketPeer.FLAG_RELIABLE, channel: int = 0) ->  void:
 	if connection:
@@ -36,6 +38,7 @@ func broadcast(packet: PackedByteArray, flag: int = ENetPacketPeer.FLAG_RELIABLE
 	
 func _init(_packet_registry: PacketRegistry):
 	packet_registry = _packet_registry
+	
 	
 func _process_events() -> void:
 	var packet_event := connection.service()
@@ -55,10 +58,12 @@ func _process_events() -> void:
 				var data: PackedByteArray = peer.get_packet()
 				on_server_packet.emit(peer.get_meta("id"), data)
 				var packet: PacketInfo = packet_registry.create_packet(data)
-				on_server_packet_info.emit(peer.get_meta("id"), packet)
+				if packet != null:
+					on_server_packet_info.emit(peer.get_meta("id"), packet)
 		# Get next packet
 		packet_event = connection.service()
 		event_type = packet_event[0]
+
 	
 func _peer_connected(peer: ENetPacketPeer) -> void:
 	var id: int = available_peer_ids.pop_back()
@@ -68,6 +73,7 @@ func _peer_connected(peer: ENetPacketPeer) -> void:
 	print("[Server] Peer connected [%d]" % id)
 	var packet: IdAssignmentPacket = IdAssignmentPacket.create(id, client_peers.keys())
 	broadcast(packet.encode())
+
 	
 func _peer_disconnected(peer: ENetPacketPeer) -> void:
 	if not peer.has_meta("id"):
