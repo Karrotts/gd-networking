@@ -3,11 +3,11 @@ class_name PacketRegistry
 var registry: Dictionary[int, Script] = {}
 
 func _init() -> void:
-	register_packet(0, IdAssignmentPacket)
+	register(0, IdAssignmentPacket)
 
 
 ## Registers a packet with under a given packet id (or type)
-func register_packet(id: int, packet_info: Script):
+func register(id: int, packet_info: Script) -> void:
 	registry[id] = packet_info
 
 
