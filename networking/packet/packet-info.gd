@@ -1,4 +1,4 @@
-class_name PacketInfo extends Node
+class_name PacketInfo extends RefCounted
 
 var type: int # always the first byte of a packet
 

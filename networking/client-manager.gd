@@ -12,11 +12,15 @@ signal on_disconnected_from_server()
 ## Emitted when a valid client packet is received
 signal on_client_packet(packet: PacketInfo)
 
+## Emitted when a server responds with a ping this is the current ping in milliseconds
+signal on_ping(ping_ms: int)
+
 var client_id: int = -1
 var client_peer_ids: Array[int] = []
 var packet_registry: PacketRegistry
 var server_peer: ENetPacketPeer
 var connection: ENetConnection
+var ping_ms: int = 0 # historical ping value updates after we recieve a ping packet
 
 func process() -> void:
 	if connection == null: return
@@ -45,9 +49,18 @@ func handle_disconnect() -> void:
 	client_peer_ids = []
 	connection = null
 	
+
+func send_ping() -> void:
+	if server_peer == null:
+		return
+	var ping_packet: PingPacket = PingPacket.new()
+	ping_packet.timestamp = Time.get_ticks_msec()
+	send_to_server(ping_packet.encode())	
+	
 	
 func send_to_server(packet: PackedByteArray, flag: int = ENetPacketPeer.FLAG_RELIABLE, channel: int = 0) -> void:
-	server_peer.send(channel, packet, flag)
+	if server_peer:
+		server_peer.send(channel, packet, flag)
 
 
 ## Determines if the provided id is a client and is THIS client
@@ -98,6 +111,11 @@ func _handle_client_packet(data: PackedByteArray) -> void:
 		_handle_connect_id(packet)
 		on_client_id_assignment.emit(packet)
 		
+	if packet is PingPacket:
+		ping_ms = Time.get_ticks_msec() - packet.timestamp
+		on_ping.emit(ping_ms)
+		return # return early so ping packet stays internal to client manager
+		
 	on_client_packet.emit(packet)
 	
 	
@@ -107,6 +125,6 @@ func _connected_to_server() -> void:
 
 	
 func _disconnected_to_server() -> void:
+	handle_disconnect()
 	print("[Client] Disconnected from server")
 	on_disconnected_from_server.emit()
-	connection = null

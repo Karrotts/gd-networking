@@ -1,11 +1,13 @@
 class_name IdAssignmentPacket extends PacketInfo
 
+const PACKET_TYPE = 0
+
 var id: int
 var remote_ids: Array[int]
 
 static func create(_id: int, _remote_ids: Array[int]) -> IdAssignmentPacket:
 	var data: IdAssignmentPacket = IdAssignmentPacket.new()
-	data.type = 0
+	data.type = PACKET_TYPE
 	data.id = _id
 	data.remote_ids = _remote_ids
 	return data
@@ -29,6 +31,7 @@ func encode() -> PackedByteArray:
 func decode(packet: PackedByteArray) -> void:
 	super.decode(packet)
 	id = packet.decode_u8(1)
+	remote_ids = []
 	for i in range(2, packet.size()):
 		remote_ids.append(packet.decode_u8(i))
 	

@@ -22,6 +22,10 @@ func process() -> void:
 	_process_events()
 
 func start_server(address: String = "127.0.0.1", port: int = 7000) -> void:
+	if connection:
+		push_error("Unable to start server, server is already running...")
+		return
+		
 	connection = ENetConnection.new()
 	var error = connection.create_host_bound(address, port)
 	if error != OK:
@@ -34,6 +38,12 @@ func start_server(address: String = "127.0.0.1", port: int = 7000) -> void:
 func broadcast(packet: PackedByteArray, flag: int = ENetPacketPeer.FLAG_RELIABLE, channel: int = 0) ->  void:
 	if connection:
 		connection.broadcast(channel, packet, flag)
+
+
+func send_to_peer(peer_id: int, packet: PackedByteArray, flag: int = ENetPacketPeer.FLAG_RELIABLE, channel: int = 0) -> void:
+	if peer_id < 0 || !client_peers.has(peer_id):
+		return
+	client_peers[peer_id].send(channel, packet, flag)
 	
 	
 func _init(_packet_registry: PacketRegistry):
@@ -53,16 +63,30 @@ func _process_events() -> void:
 				_peer_connected(peer)
 			ENetConnection.EVENT_DISCONNECT:
 				_peer_disconnected(peer)
-				return
 			ENetConnection.EVENT_RECEIVE:
 				var data: PackedByteArray = peer.get_packet()
-				on_server_packet.emit(peer.get_meta("id"), data)
-				var packet: PacketInfo = packet_registry.create_packet(data)
-				if packet != null:
-					on_server_packet_info.emit(peer.get_meta("id"), packet)
+				_handle_server_packet(data, peer)
 		# Get next packet
 		packet_event = connection.service()
 		event_type = packet_event[0]
+
+func _handle_server_packet(data: PackedByteArray, peer: ENetPacketPeer) -> void:
+	var peer_id: int = peer.get_meta("id")
+	if peer_id == null || !client_peers.has(peer_id):
+		push_error("[Server] Malformed packet recieved, packet id missing or not registered.")
+		return
+		
+	on_server_packet.emit(peer_id, data)
+	
+	var packet: PacketInfo = packet_registry.create_packet(data)
+	if packet == null:
+		return
+	
+	if packet is PingPacket:
+		send_to_peer(peer_id, data)
+		return # early return to keep ping packet internal
+		
+	on_server_packet_info.emit(peer_id, packet)
 
 	
 func _peer_connected(peer: ENetPacketPeer) -> void:

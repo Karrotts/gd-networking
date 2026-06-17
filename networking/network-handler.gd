@@ -1,7 +1,6 @@
 extends Node
 
 var packet_registry: PacketRegistry = PacketRegistry.new()
-var packet_forwarder: PacketForwarder = PacketForwarder.new(packet_registry)
 var client_manager: ClientManager =  ClientManager.new(packet_registry)
 var server_manager: ServerManager = ServerManager.new(packet_registry)
 

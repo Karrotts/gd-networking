@@ -4,10 +4,14 @@ var registry: Dictionary[int, Script] = {}
 
 func _init() -> void:
 	register(0, IdAssignmentPacket)
+	register(1, PingPacket)
 
 
 ## Registers a packet with under a given packet id (or type)
 func register(id: int, packet_info: Script) -> void:
+	if registry.has(id):
+		push_error("Packet key ["+str(id)+"] already exists in registry!")
+		return
 	registry[id] = packet_info
 
 

@@ -22,3 +22,9 @@ offset_top = 95.0
 offset_right = 101.0
 offset_bottom = 126.0
 text = "Send ID Packet"
+
+[node name="Ping" type="Label" parent="." unique_id=989265257]
+offset_left = 283.0
+offset_top = 3.0
+offset_right = 362.0
+offset_bottom = 26.0
