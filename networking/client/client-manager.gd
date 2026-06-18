@@ -21,13 +21,15 @@ var packet_registry: PacketRegistry
 var server_peer: ENetPacketPeer
 var connection: ENetConnection
 var ping_ms: int = 0 # historical ping value updates after we recieve a ping packet
+var network_settings: NetworkSettings
 
 func process() -> void:
 	if connection == null: return
 	_process_events()
 
 	
-func start_client(address: String = "127.0.0.1", port: int = 7000) -> void:
+func start_client(_network_settings: NetworkSettings) -> void:
+	network_settings = _network_settings
 	if connection:
 		print("[Client] Connection already exists!")
 		return
@@ -38,7 +40,7 @@ func start_client(address: String = "127.0.0.1", port: int = 7000) -> void:
 		push_error("Unable to create client")
 		connection = null
 		return
-	server_peer = connection.connect_to_host(address, port)
+	server_peer = connection.connect_to_host(network_settings.address, network_settings.port)
 	
 
 func handle_disconnect() -> void:
@@ -110,6 +112,12 @@ func _handle_client_packet(data: PackedByteArray) -> void:
 	if packet is IdAssignmentPacket:
 		_handle_connect_id(packet)
 		on_client_id_assignment.emit(packet)
+		
+		# TODO create this with persistence
+		var handshake_packet: HandshakePacket = HandshakePacket.new()
+		handshake_packet.game_version = network_settings.game_version
+		handshake_packet.packet_version = network_settings.packet_version
+		send_to_server(handshake_packet.encode())
 		
 	if packet is PingPacket:
 		ping_ms = Time.get_ticks_msec() - packet.timestamp

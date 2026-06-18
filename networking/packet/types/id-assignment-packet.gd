@@ -5,19 +5,14 @@ const PACKET_TYPE = 0
 var id: int
 var remote_ids: Array[int]
 
+
 static func create(_id: int, _remote_ids: Array[int]) -> IdAssignmentPacket:
 	var data: IdAssignmentPacket = IdAssignmentPacket.new()
 	data.type = PACKET_TYPE
 	data.id = _id
 	data.remote_ids = _remote_ids
 	return data
-
-
-static func create_from_packet(packet: PackedByteArray) -> IdAssignmentPacket:
-	var data: IdAssignmentPacket = IdAssignmentPacket.new()
-	data.decode(packet)
-	return data
-
+	
 
 func encode() -> PackedByteArray:
 	var packet: PackedByteArray = super.encode()

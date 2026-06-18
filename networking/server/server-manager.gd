@@ -12,27 +12,30 @@ signal on_server_packet(id: int, data: PackedByteArray)
 ## Emitted when the server receives an accepted packet
 signal on_server_packet_info(id: int, packet: PacketInfo)
 
+var persistence_manager: PersistenceManager = PersistenceManager.new()
 var connection: ENetConnection
 var available_peer_ids = range(255, -1, -1) # Max 255 Ids
 var client_peers: Dictionary[int, ENetPacketPeer]
 var packet_registry: PacketRegistry
+var server_settings: ServerSettings
 
 func process() -> void:
 	if connection == null: return
 	_process_events()
 
-func start_server(address: String = "127.0.0.1", port: int = 7000) -> void:
+func start_server(_server_settings: ServerSettings) -> void:
+	server_settings = _server_settings
 	if connection:
 		push_error("Unable to start server, server is already running...")
 		return
 		
 	connection = ENetConnection.new()
-	var error = connection.create_host_bound(address, port)
+	var error = connection.create_host_bound(server_settings.address, server_settings.port)
 	if error != OK:
-		push_error("Unable to create server on [%s:%d]" % [address, port])
+		push_error("Unable to create server on [%s:%d]" % [server_settings.address, server_settings.port])
 		connection = null
 		return
-	print("Server started on [%s:%d]" % [address, port])
+	print("Server started on [%s:%d]" % [server_settings.address, server_settings.port])
 
 	
 func broadcast(packet: PackedByteArray, flag: int = ENetPacketPeer.FLAG_RELIABLE, channel: int = 0) ->  void:
@@ -85,6 +88,12 @@ func _handle_server_packet(data: PackedByteArray, peer: ENetPacketPeer) -> void:
 	if packet is PingPacket:
 		send_to_peer(peer_id, data)
 		return # early return to keep ping packet internal
+	
+	# TODO update this to return a authentication packet back or disconnect packet
+	if packet is HandshakePacket:
+		persistence_manager.create_user()
+		print("Here is the info: [%s] [%s]" % [packet.game_version, packet.packet_version])
+		return # keep handshake packet internal to server
 		
 	on_server_packet_info.emit(peer_id, packet)
 

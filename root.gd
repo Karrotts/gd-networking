@@ -17,12 +17,12 @@ func _process(_delta: float) -> void:
 
 func _on_start_server_pressed() -> void:
 	print("Server starting...")
-	NetworkHandler.server_manager.start_server()
+	NetworkHandler.server_manager.start_server(ServerSettings.new())
 
 
 func _on_start_client_pressed() -> void:
 	print("Client connecting...")
-	NetworkHandler.client_manager.start_client()
+	NetworkHandler.client_manager.start_client(NetworkSettings.new())
 	
 
 func _on_send_packet_pressed() -> void:
@@ -32,7 +32,8 @@ func _on_send_packet_pressed() -> void:
 	
 func _handle_client_packets(packet: PacketInfo) -> void:
 	if packet is IdAssignmentPacket:
-		print("HEY")
+		print("Client received ID: " + str(packet.id))
+		
 		
 func _handle_ping_update(ping_ms: int) -> void:
 	ping.text = "Ping: " + str(ping_ms) + " ms"

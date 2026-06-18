@@ -5,6 +5,7 @@ var registry: Dictionary[int, Script] = {}
 func _init() -> void:
 	register(0, IdAssignmentPacket)
 	register(1, PingPacket)
+	register(2, HandshakePacket)
 
 
 ## Registers a packet with under a given packet id (or type)
