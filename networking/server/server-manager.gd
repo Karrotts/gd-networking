@@ -12,12 +12,17 @@ signal on_server_packet(id: int, data: PackedByteArray)
 ## Emitted when the server receives an accepted packet
 signal on_server_packet_info(id: int, packet: PacketInfo)
 
-var persistence_manager: PersistenceManager = PersistenceManager.new()
+var persistence_manager: ServerPersistenceManager
 var connection: ENetConnection
 var available_peer_ids = range(255, -1, -1) # Max 255 Ids
 var client_peers: Dictionary[int, ENetPacketPeer]
 var packet_registry: PacketRegistry
 var server_settings: ServerSettings
+var identity_provider: IdentityProvider
+
+func _init(_packet_registry: PacketRegistry, _identity_provider: IdentityProvider):
+	packet_registry = _packet_registry
+	identity_provider = _identity_provider
 
 func process() -> void:
 	if connection == null: return
@@ -25,6 +30,7 @@ func process() -> void:
 
 func start_server(_server_settings: ServerSettings) -> void:
 	server_settings = _server_settings
+	persistence_manager = ServerPersistenceManager.new(server_settings.address + ":" + str(server_settings.port))
 	if connection:
 		push_error("Unable to start server, server is already running...")
 		return
@@ -47,10 +53,6 @@ func send_to_peer(peer_id: int, packet: PackedByteArray, flag: int = ENetPacketP
 	if peer_id < 0 || !client_peers.has(peer_id):
 		return
 	client_peers[peer_id].send(channel, packet, flag)
-	
-	
-func _init(_packet_registry: PacketRegistry):
-	packet_registry = _packet_registry
 	
 	
 func _process_events() -> void:
@@ -91,8 +93,9 @@ func _handle_server_packet(data: PackedByteArray, peer: ENetPacketPeer) -> void:
 	
 	# TODO update this to return a authentication packet back or disconnect packet
 	if packet is HandshakePacket:
-		persistence_manager.create_user()
 		print("Here is the info: [%s] [%s]" % [packet.game_version, packet.packet_version])
+		var codeable: Codeable = identity_provider.get_decode_object()
+		identity_provider.authenticate(packet.get_identity(codeable))
 		return # keep handshake packet internal to server
 		
 	on_server_packet_info.emit(peer_id, packet)

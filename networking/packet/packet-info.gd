@@ -1,4 +1,4 @@
-class_name PacketInfo extends RefCounted
+class_name PacketInfo extends Codeable
 
 var type: int # always the first byte of a packet
 

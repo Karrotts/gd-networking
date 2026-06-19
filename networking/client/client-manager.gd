@@ -18,10 +18,16 @@ signal on_ping(ping_ms: int)
 var client_id: int = -1
 var client_peer_ids: Array[int] = []
 var packet_registry: PacketRegistry
+var identity_provider: IdentityProvider
 var server_peer: ENetPacketPeer
 var connection: ENetConnection
 var ping_ms: int = 0 # historical ping value updates after we recieve a ping packet
 var network_settings: NetworkSettings
+
+func _init(_packet_registry: PacketRegistry, _identity_provider: IdentityProvider):
+	packet_registry = _packet_registry
+	identity_provider = _identity_provider
+	
 
 func process() -> void:
 	if connection == null: return
@@ -68,10 +74,6 @@ func send_to_server(packet: PackedByteArray, flag: int = ENetPacketPeer.FLAG_REL
 ## Determines if the provided id is a client and is THIS client
 func is_authority(id: int) -> bool:
 	return connection != null and id == client_id
-
-
-func _init(_packet_registry: PacketRegistry):
-	packet_registry = _packet_registry
 	
 		
 func _process_events() -> void:
@@ -113,10 +115,10 @@ func _handle_client_packet(data: PackedByteArray) -> void:
 		_handle_connect_id(packet)
 		on_client_id_assignment.emit(packet)
 		
-		# TODO create this with persistence
 		var handshake_packet: HandshakePacket = HandshakePacket.new()
 		handshake_packet.game_version = network_settings.game_version
 		handshake_packet.packet_version = network_settings.packet_version
+		handshake_packet.identity = identity_provider.client_handshake_data().encode()
 		send_to_server(handshake_packet.encode())
 		
 	if packet is PingPacket:
