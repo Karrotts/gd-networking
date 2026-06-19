@@ -6,6 +6,7 @@ func _init() -> void:
 	register(0, IdAssignmentPacket)
 	register(1, PingPacket)
 	register(2, HandshakePacket)
+	register(3, IdentityAuthenticationPacket)
 
 
 ## Registers a packet with under a given packet id (or type)
@@ -19,7 +20,7 @@ func register(id: int, packet_info: Script) -> void:
 ## Creates a packet from the byte array, this will return the packet as the registered
 ## packet type. If no registered packet type under the id, then this will return null.
 func create_packet(data: PackedByteArray) -> PacketInfo:
-	var id = data.decode_u8(0)
+	var id: int = data.decode_u8(0)
 
 	if not registry.has(id):
 		push_error("Unknown packet id: %d" % id)

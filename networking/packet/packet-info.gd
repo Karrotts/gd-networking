@@ -11,3 +11,10 @@ func encode() -> PackedByteArray:
 	
 func decode(packet: PackedByteArray) -> void:
 	type = packet.decode_u8(0)
+
+
+## Returns the remaining bytes in a buffer, good for if you need to decode whatever is left
+## in a buffer
+func get_remaing_bytes(buffer: StreamPeerBuffer) -> PackedByteArray:
+	var remaining: int = buffer.get_available_bytes()
+	return buffer.get_data(remaining)[1]

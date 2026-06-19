@@ -4,9 +4,11 @@ const PACKET_TYPE: int = 1
 
 var timestamp: int
 
-func encode() -> PackedByteArray:
+func _init() -> void:
 	type = PACKET_TYPE
-	var packet := super.encode()
+
+func encode() -> PackedByteArray:
+	var packet: PackedByteArray = super.encode()
 
 	packet.append_array(
 		PackedByteArray(var_to_bytes(timestamp))
@@ -14,7 +16,7 @@ func encode() -> PackedByteArray:
 
 	return packet
 
-func decode(packet: PackedByteArray):
+func decode(packet: PackedByteArray) -> void:
 	super.decode(packet)
 
 	timestamp = bytes_to_var(

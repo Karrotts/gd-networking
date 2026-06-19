@@ -41,7 +41,7 @@ func start_client(_network_settings: NetworkSettings) -> void:
 		return
 		
 	connection = ENetConnection.new()
-	var error = connection.create_host(1)
+	var error: int = connection.create_host(1)
 	if error != OK:
 		push_error("Unable to create client")
 		connection = null
@@ -125,6 +125,9 @@ func _handle_client_packet(data: PackedByteArray) -> void:
 		ping_ms = Time.get_ticks_msec() - packet.timestamp
 		on_ping.emit(ping_ms)
 		return # return early so ping packet stays internal to client manager
+		
+	if packet is IdentityAuthenticationPacket:
+		identity_provider.handle_authentication_response(packet as IdentityAuthenticationPacket, self)
 		
 	on_client_packet.emit(packet)
 	

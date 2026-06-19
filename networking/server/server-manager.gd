@@ -12,15 +12,14 @@ signal on_server_packet(id: int, data: PackedByteArray)
 ## Emitted when the server receives an accepted packet
 signal on_server_packet_info(id: int, packet: PacketInfo)
 
-var persistence_manager: ServerPersistenceManager
 var connection: ENetConnection
-var available_peer_ids = range(255, -1, -1) # Max 255 Ids
+var available_peer_ids: Array = range(255, -1, -1) # Max 255 Ids
 var client_peers: Dictionary[int, ENetPacketPeer]
 var packet_registry: PacketRegistry
 var server_settings: ServerSettings
 var identity_provider: IdentityProvider
 
-func _init(_packet_registry: PacketRegistry, _identity_provider: IdentityProvider):
+func _init(_packet_registry: PacketRegistry, _identity_provider: IdentityProvider) -> void:
 	packet_registry = _packet_registry
 	identity_provider = _identity_provider
 
@@ -30,13 +29,12 @@ func process() -> void:
 
 func start_server(_server_settings: ServerSettings) -> void:
 	server_settings = _server_settings
-	persistence_manager = ServerPersistenceManager.new(server_settings.address + ":" + str(server_settings.port))
 	if connection:
 		push_error("Unable to start server, server is already running...")
 		return
 		
 	connection = ENetConnection.new()
-	var error = connection.create_host_bound(server_settings.address, server_settings.port)
+	var error: int = connection.create_host_bound(server_settings.address, server_settings.port)
 	if error != OK:
 		push_error("Unable to create server on [%s:%d]" % [server_settings.address, server_settings.port])
 		connection = null
@@ -56,8 +54,8 @@ func send_to_peer(peer_id: int, packet: PackedByteArray, flag: int = ENetPacketP
 	
 	
 func _process_events() -> void:
-	var packet_event := connection.service()
-	var event_type: ENetConnection.EventType = packet_event[0]
+	var packet_event: Array = connection.service()
+	var event_type: int = packet_event[0]
 	while event_type != ENetConnection.EVENT_NONE:
 		var peer: ENetPacketPeer = packet_event[1]
 		
@@ -93,9 +91,9 @@ func _handle_server_packet(data: PackedByteArray, peer: ENetPacketPeer) -> void:
 	
 	# TODO update this to return a authentication packet back or disconnect packet
 	if packet is HandshakePacket:
-		print("Here is the info: [%s] [%s]" % [packet.game_version, packet.packet_version])
-		var codeable: Codeable = identity_provider.get_decode_object()
-		identity_provider.authenticate(packet.get_identity(codeable))
+		var codeable: Codeable = identity_provider.get_client_decode()
+		var identity: IdentityAuthenticationPacket = identity_provider.authenticate(packet.convert_generic(codeable))
+		send_to_peer(peer_id, identity.encode())
 		return # keep handshake packet internal to server
 		
 	on_server_packet_info.emit(peer_id, packet)
@@ -103,7 +101,7 @@ func _handle_server_packet(data: PackedByteArray, peer: ENetPacketPeer) -> void:
 	
 func _peer_connected(peer: ENetPacketPeer) -> void:
 	var id: int = available_peer_ids.pop_back()
-	peer.set_meta("id", id)
+	peer.set_meta("id" as StringName, id)
 	client_peers[id] = peer
 	on_peer_connected.emit(id)
 	print("[Server] Peer connected [%d]" % id)
@@ -112,7 +110,7 @@ func _peer_connected(peer: ENetPacketPeer) -> void:
 
 	
 func _peer_disconnected(peer: ENetPacketPeer) -> void:
-	if not peer.has_meta("id"):
+	if not peer.has_meta("id" as StringName):
 		return
 	var id: int = peer.get_meta("id")
 	available_peer_ids.push_back(id)

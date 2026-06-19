@@ -1,4 +1,4 @@
-class_name HandshakePacket extends PacketInfo
+class_name HandshakePacket extends GenericPacketInfo
 
 const PACKET_TYPE = 2
 
@@ -10,9 +10,9 @@ func _init() -> void:
 	type = PACKET_TYPE
 
 func encode() -> PackedByteArray:
-	var data := super.encode()
+	var data: PackedByteArray = super.encode()
 
-	var buffer := StreamPeerBuffer.new()
+	var buffer: StreamPeerBuffer = StreamPeerBuffer.new()
 	buffer.data_array = data
 
 	buffer.seek(data.size())
@@ -26,17 +26,16 @@ func encode() -> PackedByteArray:
 func decode(packet: PackedByteArray) -> void:
 	super.decode(packet)
 
-	var buffer := StreamPeerBuffer.new()
+	var buffer: StreamPeerBuffer = StreamPeerBuffer.new()
 	buffer.data_array = packet
 
 	buffer.seek(1) # Skip packet type
 
 	game_version = buffer.get_string()
 	packet_version = buffer.get_string()
-	var remaining := buffer.get_available_bytes()
-	identity = buffer.get_data(remaining)[1]
+	identity = get_remaing_bytes(buffer)
 	
 
-func get_identity(identity_base: Codeable) -> Codeable:
-	identity_base.decode(identity)
-	return identity_base;
+func convert_generic(generic: Codeable) -> Codeable:
+	generic.decode(identity)
+	return generic
