@@ -18,15 +18,14 @@ signal on_ping(ping_ms: int)
 var client_id: int = -1
 var client_peer_ids: Array[int] = []
 var packet_registry: PacketRegistry
-var identity_provider: IdentityProvider
+var identity_provider: IdentityProvider = IdentityProvider.new()
 var server_peer: ENetPacketPeer
 var connection: ENetConnection
 var ping_ms: int = 0 # historical ping value updates after we recieve a ping packet
 var network_settings: NetworkSettings
 
-func _init(_packet_registry: PacketRegistry, _identity_provider: IdentityProvider):
+func _init(_packet_registry: PacketRegistry) -> void:
 	packet_registry = _packet_registry
-	identity_provider = _identity_provider
 	
 
 func process() -> void:
@@ -35,6 +34,7 @@ func process() -> void:
 
 	
 func start_client(_network_settings: NetworkSettings) -> void:
+	identity_provider.network_settings = _network_settings
 	network_settings = _network_settings
 	if connection:
 		print("[Client] Connection already exists!")
@@ -93,6 +93,10 @@ func _process_events() -> void:
 			ENetConnection.EVENT_RECEIVE:
 				var data: PackedByteArray = peer.get_packet()
 				_handle_client_packet(data)
+		
+		# check if connection has been disconnected before processing next events
+		if connection == null: return
+		
 		# Get next packet
 		packet_event = connection.service()
 		event_type = packet_event[0]

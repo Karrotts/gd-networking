@@ -1,5 +1,7 @@
 class_name IdentityProvider extends RefCounted
 
+var network_settings: NetworkSettings
+
 ## This is intended to decode codeables so this needs to return the raw object that
 ## implements Codeable
 func get_client_decode() -> Codeable:

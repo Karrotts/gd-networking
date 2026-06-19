@@ -11,6 +11,7 @@ func _ready() -> void:
 	packet_button.pressed.connect(_on_send_packet_pressed)
 	NetworkHandler.client_manager.on_client_packet.connect(_handle_client_packets)
 	NetworkHandler.client_manager.on_ping.connect(_handle_ping_update)
+	NetworkHandler.set_identity_provider(BasicIdentityProvider.new())
 
 func _process(_delta: float) -> void:
 	NetworkHandler.client_manager.send_ping()

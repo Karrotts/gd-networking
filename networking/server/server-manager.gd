@@ -19,15 +19,15 @@ var packet_registry: PacketRegistry
 var server_settings: ServerSettings
 var identity_provider: IdentityProvider
 
-func _init(_packet_registry: PacketRegistry, _identity_provider: IdentityProvider) -> void:
+func _init(_packet_registry: PacketRegistry) -> void:
 	packet_registry = _packet_registry
-	identity_provider = _identity_provider
 
 func process() -> void:
 	if connection == null: return
 	_process_events()
 
 func start_server(_server_settings: ServerSettings) -> void:
+	identity_provider.network_settings = _server_settings
 	server_settings = _server_settings
 	if connection:
 		push_error("Unable to start server, server is already running...")
