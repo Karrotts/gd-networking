@@ -8,11 +8,11 @@ var users: Dictionary = {}
 var servers: Dictionary = {}
 
 func get_authentication_decode() -> Codeable:
-	return BasicAuthentication.new()
+	return BasicIdentity.new()
 
 
 func get_client_decode() -> Codeable:
-	return BasicAuthentication.new()
+	return BasicIdentity.new()
 
 
 func client_handshake_data() -> Codeable:
@@ -20,7 +20,7 @@ func client_handshake_data() -> Codeable:
 	
 	var server_name: String = network_settings.address + ":" + str(network_settings.port)
 	
-	var auth: BasicAuthentication = BasicAuthentication.new()
+	var auth: BasicIdentity = BasicIdentity.new()
 	auth.client_id = ""
 	auth.secret = ""
 	
@@ -35,8 +35,8 @@ func authenticate(_data: Codeable) -> IdentityAuthenticationPacket:
 	_get_server_users()
 	
 	var auth: IdentityAuthenticationPacket = IdentityAuthenticationPacket.new()
-	if _data is BasicAuthentication:
-		var data: BasicAuthentication = _data as BasicAuthentication
+	if _data is BasicIdentity:
+		var data: BasicIdentity = _data as BasicIdentity
 		print("[Server] Basic Authentication: [%s] [%s]" % [data.client_id, data.secret])
 		if data.client_id != "" and data.secret != "":
 			auth.success = _validate_auth(data.client_id, data.secret)
@@ -48,7 +48,7 @@ func authenticate(_data: Codeable) -> IdentityAuthenticationPacket:
 	
 
 func handle_authentication_response(_identity: IdentityAuthenticationPacket, _client_manger: ClientManager) -> void:
-	var _auth: BasicAuthentication = _identity.convert_generic(get_authentication_decode())
+	var _auth: BasicIdentity = _identity.convert_generic(get_authentication_decode())
 	
 	var server_name: String = network_settings.address + ":" + str(network_settings.port)
 	
@@ -84,8 +84,8 @@ func _get_server_users(reload: bool = false) -> Dictionary:
 	return users
 
 
-func _create_new_auth() -> BasicAuthentication:
-	var auth: BasicAuthentication = BasicAuthentication.new()
+func _create_new_auth() -> BasicIdentity:
+	var auth: BasicIdentity = BasicIdentity.new()
 	
 	auth.client_id = _generate_uuid()
 	auth.secret = _generate_secret()
@@ -139,9 +139,11 @@ func _save(file_name: String, data: Dictionary) -> void:
 
 	file.store_string(JSON.stringify(data, "\t"))
 
+
 func _save_server_users() -> void:
 	_create_dir()
 	_save(SERVER_USERS, users)
+
 
 func _generate_uuid() -> String:
 	return str(ResourceUID.create_id())
@@ -154,6 +156,7 @@ func _generate_secret() -> String:
 		bytes.append(randi() % 256)
 
 	return bytes.hex_encode()
+
 
 func _create_dir() -> void:
 	var dir: DirAccess = DirAccess.open(SERVER_DIR)

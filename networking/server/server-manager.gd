@@ -27,11 +27,12 @@ func process() -> void:
 	_process_events()
 
 func start_server(_server_settings: ServerSettings) -> void:
-	identity_provider.network_settings = _server_settings
-	server_settings = _server_settings
 	if connection:
 		push_error("Unable to start server, server is already running...")
 		return
+	
+	identity_provider.network_settings = _server_settings
+	server_settings = _server_settings
 		
 	connection = ENetConnection.new()
 	var error: int = connection.create_host_bound(server_settings.address, server_settings.port)

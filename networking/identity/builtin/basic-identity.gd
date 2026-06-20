@@ -1,24 +1,19 @@
-class_name BasicAuthentication extends Codeable
+class_name BasicIdentity extends Codeable
 
 var client_id: String
 var secret: String
 
 func encode() -> PackedByteArray:
-	var data := super.encode()
-	
-	var buffer := StreamPeerBuffer.new()
-	buffer.data_array = data
+	var buffer: StreamPeerBuffer = StreamPeerBuffer.new()
 
-	buffer.seek(data.size())
 	buffer.put_string(client_id)
 	buffer.put_string(secret)
 	
 	return buffer.data_array
 
+
 func decode(_packet: PackedByteArray) -> void:
-	super.decode(_packet)
-	
-	var buffer := StreamPeerBuffer.new()
+	var buffer: StreamPeerBuffer = StreamPeerBuffer.new()
 	buffer.data_array = _packet
 	
 	client_id = buffer.get_string()

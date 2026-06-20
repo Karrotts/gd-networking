@@ -77,7 +77,7 @@ func is_authority(id: int) -> bool:
 	
 		
 func _process_events() -> void:
-	var packet_event := connection.service()
+	var packet_event: Array = connection.service()
 	var event_type: ENetConnection.EventType = packet_event[0]
 	while event_type != ENetConnection.EVENT_NONE:
 		var peer: ENetPacketPeer = packet_event[1]
