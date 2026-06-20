@@ -5,6 +5,13 @@ var identity_provider: IdentityProvider = IdentityProvider.new()
 var client_manager: ClientManager =  ClientManager.new(packet_registry)
 var server_manager: ServerManager = ServerManager.new(packet_registry)
 
+func _ready() -> void:
+	var args: PackedStringArray = OS.get_cmdline_args()
+
+	if args.has("--server"):
+		print("Server starting...")
+		server_manager.start_server(ServerSettings.new())
+
 func _process(_delta: float) -> void:
 	client_manager.process()
 	server_manager.process()

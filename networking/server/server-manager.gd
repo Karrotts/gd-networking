@@ -17,7 +17,7 @@ var available_peer_ids: Array = range(255, -1, -1) # Max 255 Ids
 var client_peers: Dictionary[int, ENetPacketPeer]
 var packet_registry: PacketRegistry
 var server_settings: ServerSettings
-var identity_provider: IdentityProvider
+var identity_provider: IdentityProvider = IdentityProvider.new()
 
 func _init(_packet_registry: PacketRegistry) -> void:
 	packet_registry = _packet_registry

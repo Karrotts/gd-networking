@@ -1,0 +1,66 @@
+[gd_scene format=3 uid="uid://c6h2m8mlx0kb"]
+
+[ext_resource type="Script" uid="uid://dmqcwdgow5mi1" path="res://server_item_panel.gd" id="1_ikqkl"]
+[ext_resource type="Texture2D" uid="uid://b5lrgwok26i7o" path="res://icon.svg" id="1_pri7m"]
+
+[node name="ServerItemPanel" type="Button" unique_id=1504416000]
+custom_minimum_size = Vector2(80, 80)
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 80.0
+grow_horizontal = 2
+toggle_mode = true
+script = ExtResource("1_ikqkl")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=128446888]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=1503003941]
+layout_mode = 2
+
+[node name="ServerImage" type="TextureRect" parent="MarginContainer/HBoxContainer" unique_id=503917442]
+custom_minimum_size = Vector2(75, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+texture = ExtResource("1_pri7m")
+expand_mode = 5
+
+[node name="TextContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=518501139]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ServerNameLabel" type="Label" parent="MarginContainer/HBoxContainer/TextContainer" unique_id=1521905764]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Unnamed Server"
+
+[node name="ServerDescriptionLabel" type="Label" parent="MarginContainer/HBoxContainer/TextContainer" unique_id=859226513]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5877506, 0.58775055, 0.5877505, 1)
+theme_override_font_sizes/font_size = 14
+text = "Unnamed Server"
+
+[node name="StartsContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=210017940]
+layout_mode = 2
+
+[node name="PlayersLabel" type="Label" parent="MarginContainer/HBoxContainer/StartsContainer" unique_id=1839631146]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5877506, 0.58775055, 0.5877505, 1)
+theme_override_font_sizes/font_size = 14
+text = "0 / 32"
+horizontal_alignment = 2
+
+[node name="PingLabel" type="Label" parent="MarginContainer/HBoxContainer/StartsContainer" unique_id=1092407943]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.37725976, 0.67378193, 0.30267864, 1)
+theme_override_font_sizes/font_size = 14
+text = "20 ms"
