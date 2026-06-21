@@ -1,22 +1,20 @@
 ﻿# GD-Networking
 
-A low-level, ENet-based client/server networking framework for **Godot 4.7+**, written entirely in GDScript. It sits *below* Godot's high-level `MultiplayerAPI` and gives you direct control over the connection, the binary packet format, and authentication — at the cost of having to wire up your own replication and RPCs.
-
-It ships as a ready-to-run demo project (`project.godot`) containing a working server/client scene and a server browser, but the actual library lives entirely inside the `networking/` folder and is meant to be dropped into your own Godot project.
+A low-level, ENet-based client/server networking framework for **Godot 4.7+**, written entirely in GDScript. It sits *below* Godot's high-level `MultiplayerAPI` and gives you direct control over the connection, the binary packet format, and authentication.
 
 ## What this project accomplishes
 
-- **Raw ENet client/server stack** — wraps `ENetConnection` / `ENetPacketPeer` directly (not `SceneMultiplayer`), polled once per frame from a single autoload.
-- **Typed binary packet protocol** — every packet is a GDScript class that knows how to serialize and deserialize itself into a `PackedByteArray`, registered against a single-byte packet ID.
-- **Connection handshake & peer ID assignment** — when a peer connects, the server hands out a small integer ID and tells every client about every other connected ID.
-- **Pluggable identity/authentication layer** — a `IdentityProvider` interface lets you decide how clients prove who they are during the handshake, with a working reference implementation (`BasicIdentityProvider`) that persists a generated client ID + secret to disk.
-- **Built-in latency measurement** — a ping packet the server simply echoes back.
-- **"Ping without joining" server info protocol** — a client can ask a server for its name/description/player count/ping *without* completing a full handshake, which powers the included **server browser** UI.
+- **Raw ENet client/server stack** - wraps `ENetConnection` / `ENetPacketPeer` directly (not `SceneMultiplayer`), polled once per frame from a single autoload.
+- **Typed binary packet protocol** - every packet is a GDScript class that knows how to serialize and deserialize itself into a `PackedByteArray`, registered against a single-byte packet ID.
+- **Connection handshake & peer ID assignment** - when a peer connects, the server hands out a small integer ID and tells every client about every other connected ID.
+- **Pluggable identity/authentication layer** - a `IdentityProvider` interface lets you decide how clients prove who they are during the handshake, with a working reference implementation (`BasicIdentityProvider`) that persists a generated client ID + secret to disk.
+- **Built-in latency measurement** - a ping packet the server simply echoes back.
+- **"Ping without joining" server info protocol** - a client can ask a server for its name/description/player count/ping *without* completing a full handshake, which powers the included **server browser** UI.
 
 ## Requirements
 
 - Godot **4.7** or later (uses typed `Dictionary[int, Script]`, `Array[int]`, and other Godot 4.4+/4.7 GDScript features).
-- No external addons — only built-in `ENetConnection`, `ENetPacketPeer`, and `StreamPeerBuffer`.
+- No external addons - only built-in `ENetConnection`, `ENetPacketPeer`, and `StreamPeerBuffer`.
 
 ## Installation
 
@@ -29,50 +27,11 @@ It ships as a ready-to-run demo project (`project.godot`) containing a working s
 
 Everything below assumes the autoload is named `NetworkHandler`, exactly as it is in this demo project.
 
-## Project structure
-
-```
-networking/
-├── network-handler.gd          # Autoload singleton: owns + drives the client/server managers
-├── network-settings.gd         # Base connection settings (address, port, versions)
-├── codeable.gd                 # Base class for anything that can encode()/decode() itself
-│
-├── client/
-│   └── client-manager.gd       # ENet client: connect, send, receive, handshake, ping
-│
-├── server/
-│   ├── server-manager.gd       # ENet server: bind, accept peers, broadcast, receive
-│   └── server-settings.gd      # Server config (name, description, capacity), persisted to disk
-│
-├── identity/
-│   ├── identity-provider.gd        # Pluggable auth interface
-│   ├── identity-authentication.gd  # Small auth result struct
-│   └── builtin/
-│       ├── basic-identity.gd            # Codeable: client_id + secret
-│       └── basic-identity-provider.gd   # Reference auth implementation (file-persisted)
-│
-└── packet/
-    ├── packet-info.gd          # Base packet class (adds the leading type byte)
-    ├── generic-packet-info.gd  # PacketInfo + helper to decode an embedded Codeable payload
-    ├── packet-registry.gd      # Maps packet type byte -> packet class, builds packets from bytes
-    └── types/
-        ├── id-assignment-packet.gd           # type 0
-        ├── ping-packet.gd                    # type 1
-        ├── handshake-packet.gd               # type 2
-        ├── identity-authentication-packet.gd # type 3
-        ├── server-info-request-packet.gd     # type 4
-        └── server-info-packet.gd             # type 5
-
-root.gd / root.tscn                  # Minimal demo: start server, start client, show ping
-server-browser.gd / .tscn            # Demo: query multiple servers for info without joining
-server_item_panel.gd / .tscn         # UI row used by the server browser
-```
-
 ## Core concepts
 
 ### `NetworkHandler` (autoload)
 
-The single entry point into the library. It owns one `PacketRegistry`, one `ClientManager`, and one `ServerManager`, and calls `process()` on both every frame from `_process()`. On launch it also checks `OS.get_cmdline_args()` for `--server` and auto-starts a server if present — handy for dedicated server builds. On the engine's `NOTIFICATION_WM_CLOSE_REQUEST`, it cleanly disconnects the client.
+The single entry point into the library. It owns one `PacketRegistry`, one `ClientManager`, and one `ServerManager`, and calls `process()` on both every frame from `_process()`. On launch it also checks `OS.get_cmdline_args()` for `--server` and auto-starts a server if present - handy for dedicated server builds. On the engine's `NOTIFICATION_WM_CLOSE_REQUEST`, it cleanly disconnects the client.
 
 ```gdscript
 NetworkHandler.client_manager   # ClientManager
@@ -80,7 +39,7 @@ NetworkHandler.server_manager   # ServerManager
 NetworkHandler.set_identity_provider(my_provider)  # applies to both client + server
 ```
 
-### `Codeable` — the serialization base class
+### `Codeable` - the serialization base class
 
 Everything that goes over the wire (packets, identity payloads, etc.) extends `Codeable` and implements:
 
@@ -117,7 +76,6 @@ The six built-in packet types are registered automatically when a `PacketRegistr
 | 4 | `ServerInfoRequestPacket` | Client → Server | "Tell me about yourself" probe (used to avoid a full join) |
 | 5 | `ServerInfoPacket` | Server → Client | Server name/description/capacity/current player count + timestamp |
 
-Custom packet types should start at ID `6` or above.
 
 ### `ClientManager`
 
@@ -134,8 +92,8 @@ client_manager.is_authority(id: int) -> bool   # is `id` this client's own assig
 `process()` must be called every frame (the autoload already does this) to pump ENet events. Internally, the manager:
 
 1. On `IdAssignmentPacket`, records `client_id` / `client_peer_ids`.
-2. If `attempt_connect` is `true`, immediately replies with a `HandshakePacket` containing the active `IdentityProvider`'s handshake data — this is the normal "join the game" path.
-3. If `attempt_connect` is `false`, it instead sends a `ServerInfoRequestPacket` and auto-disconnects once the `ServerInfoPacket` reply arrives — this is the lightweight "just tell me your server info" path used by the server browser.
+2. If `attempt_connect` is `true`, immediately replies with a `HandshakePacket` containing the active `IdentityProvider`'s handshake data - this is the normal "join the game" path.
+3. If `attempt_connect` is `false`, it instead sends a `ServerInfoRequestPacket` and auto-disconnects once the `ServerInfoPacket` reply arrives - this is the lightweight "just tell me your server info" path used by the server browser.
 4. `PingPacket` round trips are handled internally and surfaced via `on_ping(ping_ms)`; they are **not** forwarded to `on_client_packet`.
 
 Signals: `on_client_id_assignment`, `on_connected_to_server`, `on_disconnected_from_server`, `on_client_packet(packet)`, `on_ping(ping_ms)`.
@@ -150,9 +108,9 @@ server_manager.broadcast(bytes: PackedByteArray, flag := ENetPacketPeer.FLAG_REL
 server_manager.send_to_peer(peer_id: int, bytes: PackedByteArray, flag := ..., channel := 0)
 ```
 
-Internally, on every connection it pops the next free ID from a pool (`range(255, -1, -1)`, so **peer IDs are also single bytes — max 255 concurrent peers**), broadcasts an `IdAssignmentPacket`, and tracks the `ENetPacketPeer` by that ID. `PingPacket`, `HandshakePacket` (→ runs `IdentityProvider.authenticate`), and `ServerInfoRequestPacket` (→ replies with `ServerInfoPacket`) are all handled internally.
+Internally, on every connection it pops the next free ID from a pool (`range(255, -1, -1)`, so **peer IDs are also single bytes - max 255 concurrent peers**), broadcasts an `IdAssignmentPacket`, and tracks the `ENetPacketPeer` by that ID. `PingPacket`, `HandshakePacket` (→ runs `IdentityProvider.authenticate`), and `ServerInfoRequestPacket` (→ replies with `ServerInfoPacket`) are all handled internally.
 
-Signals: `on_peer_connected(id)`, `on_peer_disconnected(id)`, `on_server_packet(id, raw_bytes)` (fires for **every** received packet, decoded or not), `on_server_packet_info(id, packet)` (fires for decoded, non-internal packets — this is where your game logic should hook in).
+Signals: `on_peer_connected(id)`, `on_peer_disconnected(id)`, `on_server_packet(id, raw_bytes)` (fires for **every** received packet, decoded or not), `on_server_packet_info(id, packet)` (fires for decoded, non-internal packets - this is where your game logic should hook in).
 
 ### Identity / authentication
 
@@ -177,11 +135,6 @@ Apply a provider to both the client and server managers at once via:
 ```gdscript
 NetworkHandler.set_identity_provider(BasicIdentityProvider.new())
 ```
-
-### Settings
-
-- `NetworkSettings` — base: `game_version`, `packet_version`, `address` (default `127.0.0.1`), `port` (default `7000`). Used as-is by clients.
-- `ServerSettings extends NetworkSettings` — adds `server_name`, `server_description`, `max_allowed_players`, and `game_version_must_match` / `packet_version_must_match` flags. Automatically loads/saves itself as JSON to `user://server/server_config.json` so a dedicated server keeps its identity across restarts.
 
 ## Usage
 
@@ -286,7 +239,7 @@ if NetworkHandler.client_manager.is_authority(some_id):
 
 ### 7. Query a server without joining (server browser pattern)
 
-Passing `false` as the second argument to `start_client` skips the handshake/auth flow entirely — the client only asks for `ServerInfoPacket` and then disconnects, which is exactly what the included `server-browser.gd` / `server_item_panel.gd` demo does for each server a user adds to their list:
+Passing `false` as the second argument to `start_client` skips the handshake/auth flow entirely - the client only asks for `ServerInfoPacket` and then disconnects, which is exactly what the included `server-browser.gd` / `server_item_panel.gd` demo does for each server a user adds to their list:
 
 ```gdscript
 var settings := NetworkSettings.new()
@@ -301,10 +254,3 @@ NetworkHandler.client_manager.start_client(settings, false)
 2. Run the main scene (`root.tscn`): click **Start Server**, then **Start Client** to connect locally; the ping label updates every frame once connected.
 3. Or run the project with the `--server` launch argument to boot directly into a headless/dedicated server.
 4. `server_browser.tscn` shows a standalone screen where you can type in an address/port, add it to a list, and see live name/description/player-count/ping info pulled from each server without ever joining it.
-
-## Known limitations to be aware of
-
-- **255 peer cap** — peer and packet-type IDs are single bytes, so a server tops out at 255 simultaneously connected clients, and the registry tops out at 256 packet types (6 reserved).
-- **No automatic replication/RPC layer** — this library only gets bytes from A to B reliably; you still own all game-state synchronization, interpolation, and authority logic on top of it.
-- **`game_version_must_match` / `packet_version_must_match`** exist on `ServerSettings` but the bundled `HandshakePacket`/auth flow doesn't currently enforce them — add that check yourself in a custom `IdentityProvider.authenticate()` if you need it.
-- **`BasicIdentityProvider` is a reference implementation**, not hardened security — secrets are stored in plaintext JSON under `user://`, with no transport encryption (ENet packets are sent as-is).
