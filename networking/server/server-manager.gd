@@ -99,6 +99,7 @@ func _handle_server_packet(data: PackedByteArray, peer: ENetPacketPeer) -> void:
 	if packet is ServerInfoRequestPacket:
 		var response: ServerInfoPacket = ServerInfoPacket.new()
 		response.server_settings = server_settings
+		response.timestamp = Time.get_ticks_msec()
 		send_to_peer(peer_id, response.encode())
 		
 	on_server_packet_info.emit(peer_id, packet)

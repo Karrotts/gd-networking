@@ -11,7 +11,6 @@ var max_allowed_players: int = 256
 
 func _init() -> void:
 	load_from_file()
-	print(server_name)
 
 func load_from_file() -> void:
 	var file: FileAccess = FileAccess.open(SERVER_CONFIG, FileAccess.READ)

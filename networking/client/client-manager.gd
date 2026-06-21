@@ -141,6 +141,12 @@ func _handle_client_packet(data: PackedByteArray) -> void:
 	if packet is IdentityAuthenticationPacket:
 		identity_provider.handle_authentication_response(packet as IdentityAuthenticationPacket, self)
 		
+	if packet is ServerInfoPacket:
+		# if we are just getting information and not actually connecting
+		# then just disconnect from the server here automatically...
+		if _attempt_connect == false:
+			handle_disconnect()
+			
 	on_client_packet.emit(packet)
 	
 	
