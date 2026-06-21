@@ -131,7 +131,9 @@ func _handle_client_packet(data: PackedByteArray) -> void:
 		else:
 			# since we are not trying to actually access the game server
 			# just request for the server to send back the server info
-			send_to_server(ServerInfoRequestPacket.new().encode())
+			var server_info_request: ServerInfoRequestPacket = ServerInfoRequestPacket.new()
+			server_info_request.request_id = "%s:%d" % [network_settings.address, network_settings.port]
+			send_to_server(server_info_request.encode())
 		
 	if packet is PingPacket:
 		ping_ms = Time.get_ticks_msec() - packet.timestamp

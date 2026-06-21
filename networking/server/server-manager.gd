@@ -98,6 +98,7 @@ func _handle_server_packet(data: PackedByteArray, peer: ENetPacketPeer) -> void:
 		
 	if packet is ServerInfoRequestPacket:
 		var response: ServerInfoPacket = ServerInfoPacket.new()
+		response.response_id = packet.request_id
 		response.server_settings = server_settings
 		response.timestamp = Time.get_ticks_msec()
 		send_to_peer(peer_id, response.encode())
@@ -110,8 +111,12 @@ func _peer_connected(peer: ENetPacketPeer) -> void:
 	peer.set_meta("id" as StringName, id)
 	client_peers[id] = peer
 	on_peer_connected.emit(id)
+	
 	print("[Server] Peer connected [%d]" % id)
-	var packet: IdAssignmentPacket = IdAssignmentPacket.create(id, client_peers.keys())
+	
+	var packet: IdAssignmentPacket = IdAssignmentPacket.new()
+	packet.id = id
+	packet.remote_ids = client_peers.keys()
 	broadcast(packet.encode())
 
 	

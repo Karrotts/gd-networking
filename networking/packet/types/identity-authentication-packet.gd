@@ -1,37 +1,35 @@
 class_name IdentityAuthenticationPacket extends GenericPacketInfo
 
-const PACKET_TYPE: int = 3
-
 var success: bool = false
 var details: PackedByteArray
 
 func _init() -> void:
-	type = PACKET_TYPE
+	type = get_packet_type()
 
-func encode() -> PackedByteArray:
-	var data: PackedByteArray = super.encode()
+
+func get_encode_buffer() -> StreamPeerBuffer:
+	var buffer: StreamPeerBuffer = super.get_encode_buffer()
 	
-	var buffer: StreamPeerBuffer = StreamPeerBuffer.new()
-	buffer.data_array = data
-	
-	buffer.seek(data.size())
 	buffer.put_u8(int(success))
 	buffer.put_data(details)
 	
-	return buffer.data_array
-
-func decode(data: PackedByteArray) -> void:
-	super.decode(data)
+	return buffer
 	
-	var buffer: StreamPeerBuffer = StreamPeerBuffer.new()
-	buffer.data_array = data
 
-	buffer.seek(1) # Skip packet type
+func get_decode_buffer(packet: PackedByteArray) -> StreamPeerBuffer:
+	var buffer: StreamPeerBuffer = super.get_decode_buffer(packet)
 	
 	success = bool(buffer.get_u8())
 	details = get_remaing_bytes(buffer)
+	
+	return buffer
+	
 
 
 func convert_generic(generic: Codeable) -> Codeable:
 	generic.decode(details)
 	return generic
+
+
+static func get_packet_type() -> int:
+	return 3

@@ -28,6 +28,7 @@ theme_override_constants/margin_bottom = 5
 layout_mode = 2
 
 [node name="ServerImage" type="TextureRect" parent="MarginContainer/HBoxContainer" unique_id=503917442]
+modulate = Color(0.36408392, 0.36408395, 0.36408392, 1)
 custom_minimum_size = Vector2(75, 0)
 layout_mode = 2
 size_flags_horizontal = 0
@@ -41,13 +42,13 @@ size_flags_horizontal = 3
 [node name="ServerNameLabel" type="Label" parent="MarginContainer/HBoxContainer/TextContainer" unique_id=1521905764]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "Unnamed Server"
+text = "Connecting..."
 
 [node name="ServerDescriptionLabel" type="Label" parent="MarginContainer/HBoxContainer/TextContainer" unique_id=859226513]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5877506, 0.58775055, 0.5877505, 1)
 theme_override_font_sizes/font_size = 14
-text = "Unnamed Server"
+text = "Please wait while we check the server status..."
 
 [node name="StartsContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=210017940]
 layout_mode = 2
@@ -56,11 +57,9 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5877506, 0.58775055, 0.5877505, 1)
 theme_override_font_sizes/font_size = 14
-text = "0 / 32"
 horizontal_alignment = 2
 
 [node name="PingLabel" type="Label" parent="MarginContainer/HBoxContainer/StartsContainer" unique_id=1092407943]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.37725976, 0.67378193, 0.30267864, 1)
 theme_override_font_sizes/font_size = 14
-text = "20 ms"

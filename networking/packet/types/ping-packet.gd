@@ -1,24 +1,26 @@
 class_name PingPacket extends PacketInfo
 
-const PACKET_TYPE: int = 1 
-
 var timestamp: int
 
 func _init() -> void:
-	type = PACKET_TYPE
+	type = get_packet_type()
 
-func encode() -> PackedByteArray:
-	var packet: PackedByteArray = super.encode()
 
-	packet.append_array(
-		PackedByteArray(var_to_bytes(timestamp))
-	)
+func get_encode_buffer() -> StreamPeerBuffer:
+	var buffer: StreamPeerBuffer = super.get_encode_buffer()
+	
+	buffer.put_64(timestamp)
+	
+	return buffer
+	
 
-	return packet
+func get_decode_buffer(packet: PackedByteArray) -> StreamPeerBuffer:
+	var buffer: StreamPeerBuffer = super.get_decode_buffer(packet)
+	
+	timestamp = buffer.get_64()
+	
+	return buffer
+	
 
-func decode(packet: PackedByteArray) -> void:
-	super.decode(packet)
-
-	timestamp = bytes_to_var(
-		packet.slice(1)
-	)
+static func get_packet_type() -> int:
+	return 1
