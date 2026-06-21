@@ -24,6 +24,8 @@ var connection: ENetConnection
 var ping_ms: int = 0 # historical ping value updates after we recieve a ping packet
 var network_settings: NetworkSettings
 
+var _attempt_connect: bool = true
+
 func _init(_packet_registry: PacketRegistry) -> void:
 	packet_registry = _packet_registry
 	
@@ -33,7 +35,8 @@ func process() -> void:
 	_process_events()
 
 	
-func start_client(_network_settings: NetworkSettings) -> void:
+func start_client(_network_settings: NetworkSettings, attempt_connect: bool = true) -> void:
+	_attempt_connect = attempt_connect
 	identity_provider.network_settings = _network_settings
 	network_settings = _network_settings
 	if connection:
@@ -119,11 +122,16 @@ func _handle_client_packet(data: PackedByteArray) -> void:
 		_handle_connect_id(packet)
 		on_client_id_assignment.emit(packet)
 		
-		var handshake_packet: HandshakePacket = HandshakePacket.new()
-		handshake_packet.game_version = network_settings.game_version
-		handshake_packet.packet_version = network_settings.packet_version
-		handshake_packet.identity = identity_provider.client_handshake_data().encode()
-		send_to_server(handshake_packet.encode())
+		if _attempt_connect:
+			var handshake_packet: HandshakePacket = HandshakePacket.new()
+			handshake_packet.game_version = network_settings.game_version
+			handshake_packet.packet_version = network_settings.packet_version
+			handshake_packet.identity = identity_provider.client_handshake_data().encode()
+			send_to_server(handshake_packet.encode())
+		else:
+			# since we are not trying to actually access the game server
+			# just request for the server to send back the server info
+			send_to_server(ServerInfoRequestPacket.new().encode())
 		
 	if packet is PingPacket:
 		ping_ms = Time.get_ticks_msec() - packet.timestamp

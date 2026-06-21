@@ -90,12 +90,16 @@ func _handle_server_packet(data: PackedByteArray, peer: ENetPacketPeer) -> void:
 		send_to_peer(peer_id, data)
 		return # early return to keep ping packet internal
 	
-	# TODO update this to return a authentication packet back or disconnect packet
 	if packet is HandshakePacket:
 		var codeable: Codeable = identity_provider.get_client_decode()
 		var identity: IdentityAuthenticationPacket = identity_provider.authenticate(packet.convert_generic(codeable))
 		send_to_peer(peer_id, identity.encode())
 		return # keep handshake packet internal to server
+		
+	if packet is ServerInfoRequestPacket:
+		var response: ServerInfoPacket = ServerInfoPacket.new()
+		response.server_settings = server_settings
+		send_to_peer(peer_id, response.encode())
 		
 	on_server_packet_info.emit(peer_id, packet)
 

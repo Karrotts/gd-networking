@@ -3,10 +3,12 @@ class_name PacketRegistry
 var registry: Dictionary[int, Script] = {}
 
 func _init() -> void:
-	register(0, IdAssignmentPacket)
-	register(1, PingPacket)
-	register(2, HandshakePacket)
-	register(3, IdentityAuthenticationPacket)
+	register(IdAssignmentPacket.PACKET_TYPE, IdAssignmentPacket)
+	register(PingPacket.PACKET_TYPE, PingPacket)
+	register(HandshakePacket.PACKET_TYPE, HandshakePacket)
+	register(IdentityAuthenticationPacket.PACKET_TYPE, IdentityAuthenticationPacket)
+	register(ServerInfoRequestPacket.PACKET_TYPE, ServerInfoRequestPacket)
+	register(ServerInfoPacket.PACKET_TYPE, ServerInfoPacket)
 
 
 ## Registers a packet with under a given packet id (or type)
